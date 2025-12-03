@@ -1,0 +1,34 @@
+{
+  "bot_token": "7521865551:AAGZv-SgEgTJyK6CRw1Z3DlmcfW5Km9r_dk",
+  "chat_id": "-4991970119",
+  "site_name": "",
+  "thresholds": {
+    "temperature": {
+      "min": 20.0,
+      "max": 28.0,
+      "unit": "°C"
+    },
+    "humidity": {
+      "min": 30.0,
+      "max": 68.0,
+      "unit": "%"
+    },
+    "voltage": {
+      "min": 200.0,
+      "max": 250.0,
+      "unit": "V"
+    },
+    "current": {
+      "min": 0.0,
+      "max": 50.0,
+      "unit": "A"
+    }
+  },
+  "alert_cooldown": 60,
+  "database": {
+    "host": "kmu-ems-mysql",
+    "user": "root", 
+    "password": "root",
+    "database": "env_db"
+  }
+}
