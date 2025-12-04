@@ -1,6 +1,6 @@
 #!/bin/bash
 
-number=3
+number=180
 backup_dir=/var/logs/mysql_backups
 dd=$(date +%Y%m%d)
 tool=mysqldump
@@ -19,20 +19,8 @@ docker exec $container_name mysql -u $username -p$password --database=$database_
 
 echo "create $backup_dir/$database_name-$dd.csv" >> ./logs/log.txt
 
-delfile_sql=$(ls -t $backup_dir/*.sql.gz 2>/dev/null | tail -1)
-count_sql=$(ls -1 $backup_dir/*.sql.gz 2>/dev/null | wc -l)
+# Delete SQL backups older than 180 days
+find $backup_dir -name "*.sql.gz" -type f -mtime +$number -exec rm {} \; -exec echo "delete {}" >> ./logs/log.txt \;
 
-if [ $count_sql -gt $number ]
-then
-  rm $delfile_sql
-  echo "delete $delfile_sql" >> ./logs/log.txt
-fi
-
-delfile_csv=$(ls -t $backup_dir/*.csv 2>/dev/null | tail -1)
-count_csv=$(ls -1 $backup_dir/*.csv 2>/dev/null | wc -l)
-
-if [ $count_csv -gt $number ]
-then
-  rm $delfile_csv
-  echo "delete $delfile_csv" >> ./logs/log.txt
-fi
+# Delete CSV backups older than 180 days  
+find $backup_dir -name "*.csv" -type f -mtime +$number -exec rm {} \; -exec echo "delete {}" >> ./logs/log.txt \;
