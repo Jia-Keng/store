@@ -31,7 +31,7 @@ class DeviceController:
                         "temp": device_data.get("溫度02"),
                         "hum": device_data.get("濕度02")
                     },
-                    "doorSwitch": bool(device_data.get("門禁")),
+                    "doorSwitch": not bool(device_data.get("門禁")),
                     "UPS": {
                         "voltage": device_data.get("UPS電壓"),
                         "current": device_data.get("UPS電流")
