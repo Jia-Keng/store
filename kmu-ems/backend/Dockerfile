@@ -35,4 +35,3 @@ ENV PYTHONPATH=/app
 
 # 執行程式
 CMD ["sh", "-c", "python3 src/util/threshold_monitor.py & python3 src/util/modbus_collector.py & python3 app.py"]
-# CMD ["python", "app.py"]
