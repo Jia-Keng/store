@@ -54,11 +54,13 @@ def check_and_alert():
             alerts.append(f"{now} 溫度過高: {temp}°C")
         if hum and hum > thresholds['humidity']['max']:
             alerts.append(f"{now} 濕度過高: {hum}%")
-        if voltage and voltage > thresholds['voltage']['max']:
-            alerts.append(f"{now} 電壓異常: {voltage}V")
+        if voltage and voltage < thresholds['voltage']['min']:
+            alerts.append(f"{now} 電壓過低: {voltage}V")
+        # if voltage and voltage > thresholds['voltage']['max']:
+        #     alerts.append(f"{now} 電壓過高: {voltage}V")
         if current and current > thresholds['current']['max']:
             alerts.append(f"{now} 電流過載: {current}A")
-        if door == 1:
+        if door == 0:
             alerts.append(f"{now} 人員進出")
         
         for alert in alerts:

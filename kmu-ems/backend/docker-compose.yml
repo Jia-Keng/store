@@ -47,5 +47,25 @@ services:
       retries: 3
       start_period: 40s
 
+  mysql-backup:
+    image: alpine:latest
+    container_name: kmu-ems-mysql-backup
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      TZ: Asia/Taipei
+    volumes:
+      - /var/logs:/var/logs
+      - ./mysql_backup.sh:/backup.sh
+    entrypoint: >
+      sh -c "
+        apk add --no-cache mysql-client dcron &&
+        chmod +x /backup.sh &&
+        echo '0 2 * * * /backup.sh >> /var/log/backup.log 2>&1' | crontab - &&
+        echo 'Backup service started - Daily backup at 02:00' &&
+        crond -f"
+
 volumes:
   mysql_data:

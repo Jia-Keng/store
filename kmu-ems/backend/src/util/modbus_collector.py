@@ -160,12 +160,11 @@ def save_db(data):
 def job():
     data = collect()
     save_db(data)
-    check_and_alert()
 
 
 if __name__ == '__main__':
     print("啟動中...")
-    schedule.every(00).seconds.do(job)
+    schedule.every().minute.do(job)
 
     while True:
         schedule.run_pending()
