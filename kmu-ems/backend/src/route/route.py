@@ -61,7 +61,7 @@ def create_route(app):
     })
 
     # API 端點
-    @ns.route('/temperatureHumility')
+    @ns.route('/temperatureHumidity')
     class TemperatureHumidityAPI(Resource):
         @ns.response(200, 'Success', temperature_humidity_model)
         def get(self):
