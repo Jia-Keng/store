@@ -30,9 +30,24 @@ CREATE TABLE `users` (
   UNIQUE KEY `username` (`username`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+-- settings 資料表
+CREATE TABLE IF NOT EXISTS `settings` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `setting_key` varchar(100) NOT NULL,
+  `setting_value` text,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `setting_key` (`setting_key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- 插入測試資料
 INSERT INTO `kmu_ems_data` (timestamp, `溫度01`, `濕度01`, `溫度02`, `濕度02`, `門禁`, `UPS電壓`, `UPS電流`) VALUES
 (NOW(), 22.91, 67.27, 23.27, 66.25, FALSE, 250.00, 0.0);
+
+-- 插入預設設定密碼 (hash of "admin0000")
+INSERT INTO `settings` (setting_key, setting_value) VALUES
+('admin_password', '$2b$12$EIX8GSkKz2QP0Lm7JFb0Hu8LTq3YcOzT9gVCB6O9vLz4kp8VVfqEO');
 
 -- 溫度: 22.91°C (正常)
 -- 濕度: 67.27% (正常)

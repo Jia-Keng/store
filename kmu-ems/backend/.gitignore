@@ -14,7 +14,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-
+.idea/*
 __pycache__
 
 # 環境變數

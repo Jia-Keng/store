@@ -39,6 +39,15 @@ def create_route(app):
     setting_login_model = ns.model('SettingLogin', {
         'password': fields.String(required=True, description='設定密碼')
     })
+    
+    password_update_model = ns.model('PasswordUpdate', {
+        'originalPassword': fields.String(required=True, description='當前密碼'),
+        'newPassword': fields.String(required=True, description='新密碼')
+    })
+    
+    password_update_response_model = ns.model('PasswordUpdateResponse', {
+        'message': fields.String(description='更新狀態訊息')
+    })
 
     login_response_model = ns.model('LoginResponse', {
         'token': fields.String(description='JWT令牌'),
@@ -52,7 +61,7 @@ def create_route(app):
     })
 
     # API 端點
-    @ns.route('/TemperatureHumidity')
+    @ns.route('/temperatureHumility')
     class TemperatureHumidityAPI(Resource):
         @ns.response(200, 'Success', temperature_humidity_model)
         def get(self):
@@ -78,7 +87,24 @@ def create_route(app):
             """用戶登入"""
             return AuthController.login()
 
-    @ns.route('/settingLogin')
+    @ns.route('/<string:username>/password')
+    class UserPasswordAPI(Resource):
+        @ns.expect(password_update_model)
+        @ns.response(200, 'Success', password_update_response_model)
+        @ns.response(400, 'Bad Request', error_model)
+        @ns.response(401, 'Unauthorized', error_model)
+        @ns.response(403, 'Forbidden', error_model)
+        @ns.response(500, 'Internal Server Error', error_model)
+        def put(self, username):
+            """更新用戶密碼"""
+            # 檢查token中的username是否與路徑中的username一致
+            token_username = AuthController.require_auth()
+            if token_username != username:
+                from flask_restx import abort
+                abort(403, 'Access denied: can only change your own password')
+            return AuthController.update_user_password()
+
+    @ns.route('/setting/login')
     class SettingLoginAPI(Resource):
         @ns.expect(setting_login_model)
         @ns.response(200, 'Success', login_response_model)
@@ -88,12 +114,35 @@ def create_route(app):
         def post(self):
             """設定登入"""
             return AuthController.setting_login()
+    
+    @ns.route('/setting/password')
+    class SettingPasswordAPI(Resource):
+        @ns.expect(password_update_model)
+        @ns.response(200, 'Success', password_update_response_model)
+        @ns.response(400, 'Bad Request', error_model)
+        @ns.response(401, 'Unauthorized', error_model)
+        @ns.response(403, 'Forbidden', error_model)
+        @ns.response(500, 'Internal Server Error', error_model)
+        def put(self):
+            """更新設定密碼"""
+            return AuthController.update_setting_password()
 
     setting_model = ns.model('Setting', {
         'temp1': fields.Raw(description='溫度1上下限'),
         'hum1': fields.Raw(description='濕度1上下限'),
         'temp2': fields.Raw(description='溫度2上下限'),
         'hum2': fields.Raw(description='濕度2上下限')
+    })
+    
+    setting_update_model = ns.model('SettingUpdate', {
+        'temp1': fields.Raw(description='溫度1上下限', example={"upperLimit": 30.0, "lowerLimit": 18.0}),
+        'hum1': fields.Raw(description='濕度1上限', example={"upperLimit": 70.0}),
+        'temp2': fields.Raw(description='溫度2上下限', example={"upperLimit": 30.0, "lowerLimit": 18.0}),
+        'hum2': fields.Raw(description='濕度2上限', example={"upperLimit": 70.0})
+    })
+    
+    setting_update_response_model = ns.model('SettingUpdateResponse', {
+        'message': fields.String(description='更新狀態訊息')
     })
 
     @ns.route('/setting')
@@ -104,21 +153,16 @@ def create_route(app):
         @ns.response(500, 'Internal Server Error', error_model)
         def get(self):
             """取得設定上下限數值"""
-            return {
-                "temp1": {
-                    "upperLimit": 28.0,
-                    "lowerLimit": 20.0
-                },
-                "hum1": {
-                    "upperLimit": 68.0
-                },
-                "temp2": {
-                    "upperLimit": 28.0,
-                    "lowerLimit": 20.0
-                },
-                "hum2": {
-                    "upperLimit": 68.0
-                }
-            }
+            return AuthController.get_threshold_settings()
+        
+        @ns.expect(setting_update_model)
+        @ns.response(200, 'Success', setting_update_response_model)
+        @ns.response(400, 'Bad Request', error_model)
+        @ns.response(401, 'Unauthorized', error_model)
+        @ns.response(403, 'Forbidden', error_model)
+        @ns.response(500, 'Internal Server Error', error_model)
+        def put(self):
+            """更新設定上下限數值"""
+            return AuthController.update_threshold_settings()
 
     return api

@@ -35,6 +35,58 @@ def init_default_users():
         db.session.rollback()
 
 
+def init_settings_table():
+    """初始化設定表格，確保表格存在"""
+    try:
+        # 檢查settings表是否存在
+        table_check = db.session.execute(db.text("SHOW TABLES LIKE 'settings'"))
+        if table_check.fetchone() is None:
+            print("Creating settings table...")
+            # 建立settings表
+            db.session.execute(db.text("""
+                CREATE TABLE `settings` (
+                  `id` int NOT NULL AUTO_INCREMENT,
+                  `setting_key` varchar(100) NOT NULL,
+                  `setting_value` text,
+                  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+                  PRIMARY KEY (`id`),
+                  UNIQUE KEY `setting_key` (`setting_key`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+            """))
+            
+            # 插入預設設定密碼
+            admin_hash = bcrypt.hashpw('admin0000'.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+            db.session.execute(
+                db.text("INSERT INTO settings (setting_key, setting_value) VALUES (:key, :value)"),
+                {"key": "admin_password", "value": admin_hash}
+            )
+            
+            db.session.commit()
+            print("Settings table created and default admin password set")
+        else:
+            # 檢查是否有admin_password設定
+            result = db.session.execute(
+                db.text("SELECT COUNT(*) FROM settings WHERE setting_key = 'admin_password'")
+            )
+            count = result.fetchone()[0]
+            
+            if count == 0:
+                # 插入預設admin密碼
+                admin_hash = bcrypt.hashpw('admin0000'.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+                db.session.execute(
+                    db.text("INSERT INTO settings (setting_key, setting_value) VALUES (:key, :value)"),
+                    {"key": "admin_password", "value": admin_hash}
+                )
+                db.session.commit()
+                print("Default admin password added to existing settings table")
+            else:
+                print("Settings table exists with admin password configured")
+
+    except Exception as e:
+        print(f"Error initializing settings table: {e}")
+        db.session.rollback()
+
 def init_test_data():
     """初始化測試資料，當表存在且為空時會初始化"""
     try:
@@ -68,9 +120,10 @@ def create_app():
     # 初始化資料庫
     db.init_app(app)
 
-    # 初始化預我設用戶和測試資料
+    # 初始化預設用戶、設定表格和測試資料
     with app.app_context():
         init_default_users()
+        init_settings_table()
         init_test_data()
 
     # 呼叫路由
