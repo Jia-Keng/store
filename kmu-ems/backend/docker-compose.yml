@@ -51,6 +51,7 @@ services:
     image: alpine:latest
     container_name: kmu-ems-mysql-backup
     restart: unless-stopped
+    init: true
     depends_on:
       mysql:
         condition: service_healthy
